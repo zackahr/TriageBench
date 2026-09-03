@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "shared/ticket_schema.json",
+  "title": "Support Ticket",
+  "description": "Contract for ticket triage output. Agents must classify each ticket using a valid categoryand priority,and record a lifecycle status.",
+  "type": "object",
+  "required": [
+    "ticket_id",
+    "category",
+    "priority",
+    "status",
+    "customer_email",
+    "summary"
+  ],
+  "properties": {
+    "ticket_id": {
+      "type": "string",
+      "pattern": "^TKT-[0-9]{6}$",
+      "description": "Unique ticket identifier, e.g. TKT-000123."
+    },
+    "category": {
+      "$ref": "#/$defs/category"
+    },
+    "priority": {
+      "$ref": "#/$defs/priority"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "in-progress",
+        "resolved",
+        "escalated",
+        "closed"
+      ],
+      "description": "Lifecycle state of the ticket."
+    },
+    "customer_email": {
+      "type": "string",
+      "format": "email"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 10,
+      "description": "One-sentence summary of the customer's issue."
+    },
+    "resolution": {
+      "type": ["string", "null"],
+      "description": "Optional free-text of how the ticket was closed."
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "category": {
+      "title": "Ticket Category",
+      "description": "Valid triage categories. Every category his a defined meaning.",
+      "type": "string",
+      "enum": [
+        "account-access",
+        "password-reset",
+        "billing-dispute",
+        "refund-request",
+        "technical-issue",
+        "general-inquiry",
+        "escalation"
+      ]
+    },
+    "priority": {
+      "title": "Ticket Priority",
+      "description": "Priority assigned by the triage agent. urgent = security, fraud, or full service outage.",
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ]
+    }
+  }
+}
