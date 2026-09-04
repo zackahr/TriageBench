@@ -1,0 +1,18 @@
+# Harbor run/check artifacts
+jobs/
+
+# Secrets (never commit API keys)
+.env
+
+# Stray output from local ad-hoc runs
+_out.json
+resolution.json
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Agent/verifier runtime logs mirrored into the workspace
+/logs/
+reward.txt

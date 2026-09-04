@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "shared/ticket_schema.json",
   "title": "Support Ticket",
-  "description": "Contract for ticket triage output. Agents must classify each ticket using a valid categoryand priority,and record a lifecycle status.",
+  "description": "Contract for ticket triage output. Agents must classify each ticket using a valid category and priority, and record a lifecycle status.",
   "type": "object",
   "required": [
     "ticket_id",
@@ -53,15 +53,15 @@
   "$defs": {
     "category": {
       "title": "Ticket Category",
-      "description": "Valid triage categories. Every category his a defined meaning.",
+      "description": "Valid triage categories. Every category has a defined meaning.",
       "type": "string",
       "enum": [
-        "account-access",
-        "password-reset",
-        "billing-dispute",
-        "refund-request",
-        "technical-issue",
-        "general-inquiry",
+        "account_access",
+        "password_reset",
+        "billing_dispute",
+        "refund_request",
+        "technical_issue",
+        "general_inquiry",
         "escalation"
       ]
     },
