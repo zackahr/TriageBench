@@ -1,0 +1,12 @@
+{
+  "ticket_id": "TKT-000931",
+  "subject": "P1 - checkout-payments down, 100% failure rate, all customers impacted",
+  "severity": "P1",
+  "priority": "urgent",
+  "status": "in-progress",
+  "customer_email": "oncall@payments.example.com",
+  "reported_at": "2026-09-05T08:15:00Z",
+  "channel": "monitoring",
+  "environment": "",
+  "body": "CHECKOUT IS DOWN. The checkout-payments service is showing a 100% error rate for the last 45 minutes. Every customer that tries to pay is getting a 500. This is our primary revenue stream and the exec team is watching. Something went wrong with the latest deploy. NOTE: the alert payload did not record which environment or region the failing cluster runs in, and the on-call handoff note is missing that detail too. We need the correct environment confirmed before any change is applied."
+}

@@ -1,0 +1,48 @@
+# Harbor task configuration for the multi-step escalation & failure-recovery
+# task. The agent workflow is intentionally multi-step:
+#   step 1: detect the missing environment identifier in the outage ticket and
+#           log a clarification query (clarification_needed.txt)
+#   step 2: apply the production configuration fix once the on-call reply is
+#           available (config.yaml)
+#   step 3: file the executive incident report (incident_report.md)
+# Constraints below: a generous agent timeout covers all three sequential
+# steps; the verifier gets public network access (and the OpenRouter key) for
+# the LLM-as-a-Judge report grade, while the agent stays on the OpenRouter
+# allowlist to mirror the rest of the suite.
+
+schema_version = "1.4"
+
+[task]
+name = "ticket-eval-suite/hard-multi-step-escalation"
+version = "1.0.0"
+description = "Resolve a P1 checkout outage from an incomplete ticket: request the missing environment, fix config.yaml, and file an executive incident report."
+authors = [{ name = "TriageBench", email = "eval@triage-bench.dev" }]
+keywords = ["customer-support", "incident-response", "escalation", "failure-recovery", "multi-step", "hard"]
+
+[metadata]
+difficulty = "hard"
+category = "customer-support"
+workflow_steps = 3
+
+[agent]
+timeout_sec = 600.0
+user = "root"
+network_mode = "allowlist"
+allowed_hosts = ["*.openrouter.ai", "openrouter.ai"]
+
+[verifier]
+timeout_sec = 240.0
+user = "root"
+network_mode = "public"
+
+[verifier.env]
+OPENROUTER_API_KEY = "${OPENROUTER_API_KEY}"
+OPENAI_API_KEY = "${OPENAI_API_KEY:-}"
+
+[environment]
+build_timeout_sec = 600.0
+network_mode = "public"
+os = "linux"
+cpus = 1
+memory_mb = 2048
+storage_mb = 10240

@@ -82,3 +82,26 @@ reply (free-text, graded by an LLM), and log the refund as structured JSON.
 | `tasks/medium-billing-dispute/tests/test.py` | **Hybrid verifier**: deterministic pytest checks (`refund_log.json` schema, exact `45.0` amount, exact duplicate `transaction_id`, status/method) + a single cached LLM call (stdlib `urllib`, no third-party deps) grading `reply.txt` on tone (≥4/5), no promises beyond policy, and explicit $45 refund confirmation. |
 | `tasks/medium-billing-dispute/tests/test.sh` | Verifier entrypoint: runs pytest and writes `1`/`0` to `/logs/verifier/reward.txt`. |
 | `tasks/medium-billing-dispute/solution/solve.sh` | Golden oracle: derives the duplicate charge from the CSV (not hardcoded), writes the ideal `reply.txt` and `refund_log.json` — proving the task is solvable. |
+
+## Task: hard-multi-step-escalation
+
+The hard task tests **multi-step escalation & failure recovery**: the agent must
+work a P1 checkout-payments outage from an **incomplete ticket** (the affected
+environment/region identifier is missing). Workflow — (1) detect the missing
+info and log a clarification query, (2) apply the production `config.yaml` fix
+once the on-call reply is available (or simulated), (3) file an executive
+incident report graded by an LLM judge. Steps are enforced as a sequential
+workflow inside one agent run (`workflow_steps = 3` in the task metadata).
+
+| File | Role |
+|---|---|
+| `tasks/hard-multi-step-escalation/instruction.md` | Prompts the agent through all three steps: read `/workspace/outage_ticket.json`, spot that the environment/region is missing, write `/workspace/clarification_needed.txt`, then (with `/workspace/user_response.txt` present or simulated) repair `/workspace/config.yaml` and write `/workspace/incident_report.md`. |
+| `tasks/hard-multi-step-escalation/task.toml` | Harbor metadata; `workflow_steps = 3` constraint, generous 600s agent timeout for the sequential steps, verifier network `public` with `OPENROUTER_API_KEY`/`OPENAI_API_KEY` for the LLM judge, agent on the `*.openrouter.ai` allowlist. |
+| `tasks/hard-multi-step-escalation/environment/Dockerfile` | Agent container: `python:3.12-slim`, pinned `pytest==8.4.1` and `pyyaml==6.0.2`, `/workspace` as workdir seeding all inputs. |
+| `tasks/hard-multi-step-escalation/environment/outage_ticket.json` | The **incomplete P1 incident report**: severity `P1`, 100% checkout failure, but `environment` left empty — the missing-system-identifier trap. |
+| `tasks/hard-multi-step-escalation/environment/config.yaml` | The **corrupted config**: `staging` env/region, staging DB host, pool 16, and `auth_bypass_for_tests: true` — the misconfiguration the agent must repair. |
+| `tasks/hard-multi-step-escalation/environment/user_response.txt` | Mock on-call escalation reply confirming the environment: production in `us-west-2`; may be pre-seeded (agent may also simulate it). |
+| `tasks/hard-multi-step-escalation/environment/company_policy.md` | Copy of `shared/company_policy.md` shipped into the container (Section 3 governs escalation handling). |
+| `tasks/hard-multi-step-escalation/tests/test.py` | **Hybrid verifier**: deterministic pytest checks (clarification log content, `config.yaml` valid YAML + correct production fix on all 5 fields) + an LLM-as-a-Judge call (stdlib `urllib`) grading `incident_report.md` on root-cause accuracy (≥4/5 for the staging/production misconfiguration), impact, fix, and clarification-noted. |
+| `tasks/hard-multi-step-escalation/tests/test.sh` | Verifier entrypoint: runs pytest and writes `1`/`0` to `/logs/verifier/reward.txt`. |
+| `tasks/hard-multi-step-escalation/solution/solve.sh` | Golden oracle: logs the clarification, rewrites `config.yaml` to production, and writes the ideal incident report — proving all three steps are solvable. |

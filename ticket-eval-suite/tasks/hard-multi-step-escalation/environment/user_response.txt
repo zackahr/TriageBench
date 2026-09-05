@@ -1,0 +1,7 @@
+Re: Incident TKT-000931 — environment confirmed.
+
+Affected environment: PRODUCTION
+Region / cluster: us-west-2 (prod-west2-checkout)
+
+This is the live-traffic cluster, not staging. Please apply the fix to the
+production configuration and re-certify the deployment.
