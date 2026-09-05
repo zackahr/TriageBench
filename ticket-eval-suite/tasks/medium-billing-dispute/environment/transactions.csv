@@ -1,0 +1,6 @@
+transaction_id,created_at,description,amount,currency,status,customer_email,payment_method
+TXN-2198447,2026-09-04T09:00:00Z,INV-5520 Enterprise plan monthly renewal,-45.00,USD,completed,priya.nair@northwindlabs.io,corporate_card_ending_1244
+TXN-2198448,2026-09-04T09:01:00Z,INV-5520 Enterprise plan monthly renewal,-45.00,USD,completed,priya.nair@northwindlabs.io,corporate_card_ending_1244
+TXN-2189941,2026-08-04T09:00:00Z,INV-5489 Enterprise plan monthly renewal,-45.00,USD,completed,priya.nair@northwindlabs.io,corporate_card_ending_1244
+TXN-2180072,2026-07-05T09:00:00Z,INV-5403 Enterprise plan monthly renewal,-45.00,USD,completed,priya.nair@northwindlabs.io,corporate_card_ending_1244
+TXN-2199005,2026-09-02T14:20:00Z,INV-5518 Extra user seat add-on,-15.00,USD,completed,priya.nair@northwindlabs.io,corporate_card_ending_1244

@@ -1,0 +1,35 @@
+schema_version = "1.4"
+
+[task]
+name = "ticket-eval-suite/medium-billing-dispute"
+version = "1.0.0"
+description = "Evaluate an enterprise billing double-charge, compute the $45 refund, write a customer reply, and log the refund."
+authors = [{ name = "TriageBench", email = "eval@triage-bench.dev" }]
+keywords = ["customer-support", "triage", "billing-dispute", "refund", "medium"]
+
+[metadata]
+difficulty = "medium"
+category = "customer-support"
+
+[agent]
+timeout_sec = 420.0
+user = "root"
+network_mode = "allowlist"
+allowed_hosts = ["*.openrouter.ai", "openrouter.ai"]
+
+[verifier]
+timeout_sec = 240.0
+user = "root"
+network_mode = "public"
+
+[verifier.env]
+OPENROUTER_API_KEY = "${OPENROUTER_API_KEY}"
+OPENAI_API_KEY = "${OPENAI_API_KEY:-}"
+
+[environment]
+build_timeout_sec = 600.0
+network_mode = "public"
+os = "linux"
+cpus = 1
+memory_mb = 2048
+storage_mb = 10240

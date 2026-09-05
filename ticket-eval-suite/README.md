@@ -63,3 +63,22 @@ agent's container so a correct response must respect company policy and the tick
 | `tasks/<name>/solution/solve.sh` | **Golden oracle** — correct reference solution; writes the expected `resolution.json`, proving the task is solvable. |
 
 Flow: `instruction.md` prompts the agent → agent reads `ticket.json` + `company_policy.md` → writes `resolution.json` → `test.sh` runs `test.py` → produces `reward.txt` → Harbor records the reward (1.0 = passed).
+
+## Task: medium-billing-dispute
+
+The medium task extends the generic layout with a **transaction-history input**
+and an **LLM-as-a-Judge verifier**. The agent must investigate a duplicate
+charge, compute the refund under policy Section 2, write a customer-facing
+reply (free-text, graded by an LLM), and log the refund as structured JSON.
+
+| File | Role |
+|---|---|
+| `tasks/medium-billing-dispute/instruction.md` | Prompts the agent: read `/workspace/ticket.json` + `/workspace/transactions.csv` + `company_policy.md`, spot the duplicate charge, then write `/workspace/reply.txt` (customer-facing) and `/workspace/refund_log.json` (exact 7-field schema documented inline). |
+| `tasks/medium-billing-dispute/task.toml` | Harbor metadata; `[verifier.env]` maps `OPENROUTER_API_KEY` (and optional `OPENAI_API_KEY`) from the host so the LLM judge can call out; verifier network is `public`, agent stays on the `*.openrouter.ai` allowlist. |
+| `tasks/medium-billing-dispute/environment/Dockerfile` | Agent container: `python:3.12-slim`, pinned `pytest==8.4.1`, `/workspace` as workdir. |
+| `tasks/medium-billing-dispute/environment/ticket.json` | The noisy ticket: an angry enterprise customer reporting a second $45 charge on their plan. |
+| `tasks/medium-billing-dispute/environment/transactions.csv` | Mock billing history: two identical `INV-5520` $45 charges on the same day (the duplicate signal) plus decoy renewal/add-on rows — defeats naive keyword matching. |
+| `tasks/medium-billing-dispute/environment/company_policy.md` | Copy of `shared/company_policy.md` shipped into the container. |
+| `tasks/medium-billing-dispute/tests/test.py` | **Hybrid verifier**: deterministic pytest checks (`refund_log.json` schema, exact `45.0` amount, exact duplicate `transaction_id`, status/method) + a single cached LLM call (stdlib `urllib`, no third-party deps) grading `reply.txt` on tone (≥4/5), no promises beyond policy, and explicit $45 refund confirmation. |
+| `tasks/medium-billing-dispute/tests/test.sh` | Verifier entrypoint: runs pytest and writes `1`/`0` to `/logs/verifier/reward.txt`. |
+| `tasks/medium-billing-dispute/solution/solve.sh` | Golden oracle: derives the duplicate charge from the CSV (not hardcoded), writes the ideal `reply.txt` and `refund_log.json` — proving the task is solvable. |
