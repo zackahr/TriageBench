@@ -8,6 +8,9 @@ jobs/
 _out.json
 resolution.json
 
+# Regression-test harness output
+eval_results/
+
 # Python
 __pycache__/
 *.py[cod]

@@ -33,6 +33,74 @@ for t in tasks/*/; do
 done
 ```
 
+## Regression testing
+
+`run_suite.py` and `generate_report.py` provide a production-grade regression
+pipeline: run every task under `tasks/` against any agent/model, record a
+structured run log, and diff runs to flag regressions.
+
+### Prerequisites
+
+- The Harbor Python SDK is pulled in on demand via `uv` (`--with harbor`), so
+  no manual install is needed.
+- The LLM-as-a-Judge verifier on the medium and hard tasks needs an API key.
+  `run_suite.py` auto-loads `./.env` (e.g. `OPENROUTER_API_KEY=...`), the same
+  file the tasks expect.
+
+### Execute a regression check
+
+Run the suite against a specified agent configuration. Every invocation writes
+a log to `eval_results/run_<timestamp>.json`:
+
+```bash
+# Baseline: standard Claude Sonnet
+uv run --with harbor python run_suite.py \
+  --agent claude-code --model anthropic/claude-sonnet-4-6 \
+  --label baseline-sonnet
+
+# Candidate change: lower-tier model (or --extra-instruction for prompt edits)
+uv run --with harbor python run_suite.py \
+  --agent claude-code --model anthropic/claude-haiku-4-5 \
+  --label canary-haiku \
+  --extra-instruction experiments/canary-prompt.md
+
+# Generate the Markdown regression report comparing the two latest runs
+uv run --with harbor python generate_report.py
+```
+
+The report (`eval_results/report_<run_id>.md`) contains a summary table, a
+per-task comparison table (baseline vs current, reward delta, deterministic
+and LLM-judge sub-scores), an explicit `[REGRESSION]` list for score drops or
+pass-to-fail flips, and the exact commands to reproduce both runs.
+
+#### `run_suite.py` options
+
+| Option | Default | Purpose |
+|---|---|---|
+| `--agent` | `claude-code` | Harbor agent name (or `module.path:ClassName`). |
+| `-m, --model` | `anthropic/claude-sonnet-4-6` | Model for the agent. |
+| `--label` | `<agent>__<model>` | Human-readable tag recorded in the run log. |
+| `-k, --n-attempts` | `1` | Attempts per task; best reward wins. |
+| `-n, --n-concurrent` | `1` | Concurrent trials (keep low for stable LLM-judge runs). |
+| `--extra-instruction` | — | Instruction file appended to every task (prompt-modification experiments). |
+| `--ak key=value` | — | Agent kwarg (repeatable), e.g. `--ak temperature=0`. |
+| `--task <name>` / `--exclude-task <name>` | — | Include/exclude tasks by directory name (repeatable). |
+| `--dry-run` | — | Print the resolved Harbor `JobConfig` and task list, then exit. |
+
+#### `generate_report.py` options
+
+Run with no args to compare the two most recent logs. To pin specific runs:
+
+```bash
+uv run --with harbor python generate_report.py \
+  --baseline eval_results/run_<ts>.json --current eval_results/run_<ts>.json \
+  --out eval_results/report.md
+```
+
+A single log (`--current` only) renders a per-task results table instead of a
+comparison. Run logs and reports live in `eval_results/` (git-ignored); raw
+Harbor per-trial artifacts stay in `jobs/`.
+
 ## Task layout
 
 Every `tasks/<name>/` follows the standard Harbor convention:
